@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/mssql/server:latest
+
+#RUN mkdir -p /startupscripts
+
+WORKDIR /startupscripts
+
+COPY . /startupscripts
+
+ENV ACCEPT_EULA=Y
+ENV SA_PASSWORD=1234qwerASDF
+
+# Grant permissions for the scripts to be executable
+RUN chmod +x ./create-db.sh \
+  && chmod +x ./scan-db.sh \
+  && chmod +x ./wait-for-it.sh
+
+RUN /bin/bash ./create-db.sh
+
+CMD /bin/bash ./scan-db.sh
