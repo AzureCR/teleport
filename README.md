@@ -2,6 +2,8 @@
 
 Welcome to Project Teleport
 
+> For background, please see [Azure Container Registry Adds Teleportation](https://stevelasker.blog/2019/10/29/azure-container-registry-teleportation/)
+
 Here you will find some samples for teleporting your container images
 
 ## Preview 1 Constraints
