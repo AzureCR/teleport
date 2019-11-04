@@ -1,232 +1,168 @@
-# Teleport Baseline Demos
+# Teleport Demos
 
-## Your Environment Names
+Here you will find samples and scenarios for teleporting *your* container images.
 
-```sh
-export ACR_NAME=demo42t
-export ACR_TELEPORT_URL=azurecr.io
-export LOCATION=soutchcentralus
-export RESOURCE_GROUP=$ACR_NAME
-```
+## Table of Contents
 
-## Setting up the Environment
+- [Setting Your Environment Variables](#setting-your-environment-variables)
+- [Enabling Teleportation](#enabling-teleportation)
+- [Import Images](#import-images)
+- [Comparing with a Dedicated VM](#comparing-with-a-dedicated-vm)
+- [Comparing with ACI](#comparing-with-aci)
+- [Multi-step Task Samples](#multi-step-task-samples)
 
-- Create a ACR
+## Setting Your Environment Variables
 
-```sh
-az acr create -n $ACR_NAME -l $LOCATION -g $RESOURCE_GROUP --sku premium
-```
-
-- Enable for Teleportation
-  Request Access at https://aka.ms/teleport/signup
-
-- Import Images
-
-```sh
-#az acr import \
-#  -n ${ACR_NAME} \
-#  --source mcr.microsoft.com/dotnet/core/runtime:2.1.10 \
-#  --image base-images/dotnet/core/runtime:2.1.10
-
-docker pull mcr.microsoft.com/dotnet/core/runtime:2.1.10
-docker tag mcr.microsoft.com/dotnet/core/runtime:2.1.10 ${ACR_NAME}.azurecr.io/base-images/dotnet/core/runtime:2.1.10
-
-docker push ${ACR_NAME}.azurecr.io/base-images/dotnet/core/runtime:2.1.10
-docker pull ${ACR_NAME}.azurecr.io/base-images/dotnet/core/runtime:2.1.10
-
-
-#az acr import \
-#  -n ${ACR_NAME} \
-#  --source mcr.microsoft.com/dotnet/core/sdk:2.1 \
-#  --image base-images/dotnet/core/sdk:2.1
-
-docker pull mcr.microsoft.com/dotnet/core/sdk:2.1
-docker tag mcr.microsoft.com/dotnet/core/sdk:2.1 ${ACR_NAME}.azurecr.io/base-images/dotnet/core/sdk:2.1
-docker push ${ACR_NAME}.azurecr.io/base-images/dotnet/core/sdk:2.1
-
-docker pull ${ACR_NAME}.azurecr.io/base-images/dotnet/core/sdk:2.1
-
-#az acr import \
-#  -n ${ACR_NAME} \
-#  --source mcr.microsoft.com/dotnet/core/sdk:2.2 \
-#  --image base-images/dotnet/core/sdk:2.2
-
-docker pull mcr.microsoft.com/dotnet/core/sdk:2.2
-docker tag mcr.microsoft.com/dotnet/core/sdk:2.2 ${ACR_NAME}.azurecr.io/dotnet/core/sdk:2.2
-docker push ${ACR_NAME}.azurecr.io/base-images/dotnet/core/sdk:2.2
-docker pull ${ACR_NAME}.azurecr.io/base-imagesdotnet/core/sdk:2.2
-
-#az acr import \
-#  -n ${ACR_NAME} \
-#  --source mcr.microsoft.com/azure-cli:2.0.75 \
-#  --image azure-cli:2.0.75
-docker pull mcr.microsoft.com/azure-cli:2.0.75
-docker tag mcr.microsoft.com/azure-cli:2.0.75 ${ACR_NAME}.azurecr.io/azure-cli:2.0.75
-docker push ${ACR_NAME}.azurecr.io/azure-cli:2.0.75
-
-docker pull mcr.microsoft.com/azure-cli:latest
-docker tag mcr.microsoft.com/azure-cli:latest ${ACR_NAME}.azurecr.io/azure-cli:latest
-docker push ${ACR_NAME}.azurecr.io/azure-cli:latest
-
-#az acr import \
-#  -n ${ACR_NAME} \
-#  --source demo42.azurecr.io/demo42/queueworker:1 \
-#  --image demo42/queueworker:1
-
-#az acr import \
-#  -n ${ACR_NAME} \
-#  --source demo42.azurecr.io/demo42/web:1 \
-#  --image demo42/web:1
-```
-
-## Create A Comparison VM
-
-- Install a VM from this template
-
-  https://github.com/Azure/azure-quickstart-templates/tree/master/docker-simple-on-ubuntu
-
-- Install the AZ CLI
+- Set the following variables for easy copy/paste of the samples.
 
   ```sh
-  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  export ACR_NAME=[yourRegistryName] #eg: demo42
+  export LOCATION=soutchcentralus
+  export RESOURCE_GROUP=${ACR_NAME}
   ```
 
-- Login and Configure the AZ CLI
-
-```sh
-az login
-az configure
-```
-
-## Pre Demo
-
-The following is needed to start the demo:
-
-- SSH into the Docker VM
-
-  ```sh
-  ssh stevelas@stevelasteleportvm.southcentralus.cloudapp.azure.com
-  ```
-
-- ACR Login
+- Login to the AZ CLI
+  >If your using the Azure [cloud shell][cloud-shell], you are already logged in.
 
   ```sh
   az login
-  az acr login -n $ACR_NAME
+  az configure --defaults acr=${ACR_NAME}
   ```
 
-- Docker Login
+- Create an ACR.
+
+  > For preview, teleportation requires a premium registry.
 
   ```sh
-  ACR_NAME=${ACR_NAME}
-  ACR_USER=${ACR_NAME}
-  ACR_PWD="$(az acr credential show -n ${ACR_NAME} --query passwords[0].value -o tsv)"
+  az group create \
+    -n ${ACR_NAME} \
+    -l ${LOCATION}
+
+  az acr create \
+    -n ${ACR_NAME} \
+    -l ${LOCATION} \
+    -g ${RESOURCE_GROUP} \
+    --sku premium
   ```
 
-- Clear any images
+## Enabling Teleportation
+
+- Request Access at https://aka.ms/teleport/signup
+
+- Verify Teleport is Enabled
+
+  To verify if your registry, and specific repository is enabled for Teleport and layer expansion, run the following cli command.
 
   ```sh
-  docker rm -f $(docker ps -a -q)
-  docker rmi $(docker images -a -q)
-  docker ps -a
-  docker images -a
+  az acr repository show \
+    -n ${ACR_NAME} \
+    --repository azure-cli \
+    -o jsonc
   ```
 
-## Demo Time
+  Look for `"teleportEnabled": true,` in the output.
 
-## VM Comparison
+  If the `"teleportEnabled"` name/value pair does not exist, the registry and repository are not yet Teleport enabled see [support][support] options.
+
+  ```sh
+  {
+    "changeableAttributes": {
+      "deleteEnabled": true,
+      "listEnabled": true,
+      "readEnabled": true,
+      "teleportEnabled": true,
+      "writeEnabled": true
+    },
+    ...
+  ```
+
+## Import Images
+
+Import some images to get started.
+
+> Note: [acr import][acr-import] is not yet supported. For Preview 1, please either pull/push or use ACR Tasks to build the images into the target registry.
+
+- Pull-Pull images
+
+  ```sh
+  #az acr import \
+  #  -n ${ACR_NAME} \
+  #  --source mcr.microsoft.com/azure-cli:2.0.75 \
+  #  --image azure-cli:2.0.75
+  docker pull mcr.microsoft.com/azure-cli:2.0.75
+  docker tag mcr.microsoft.com/azure-cli:2.0.75 \
+    ${ACR_NAME}.azurecr.io/azure-cli:2.0.75
+  docker push ${ACR_NAME}.azurecr.io/azure-cli:2.0.75
+  ```
+
+- Build/Push Images
+
+  ```sh
+  az acr build \
+    --registry ${ACR_NAME} \
+    -t azure-cli:2.0.75 \
+    https://github.com/Azure/azure-cli.git
+  ```
+
+## First Teleportation
+
+  ```sh
+  az acr run \
+    -r ${ACR_NAME} \
+    --cmd "orca run {{.Run.Registry}}/azure-cli:2.0.75 az" /dev/null
+  ```
+
+## Comparing with a Dedicated VM
+
+When Teleporting images, it helps to have a comparison.
+
+> NOTE: Teleport is intended to speed performance, when comparing to a standard docker pull, within the Azure data center. Comparing a Teleportation with a docker run, initialed from a developer machine, outside of Azure isn't a fair comparison as you're pulling images across the internet.
+
+See [vm-setup.md](./vm-setup.md) for configuring a VM within Azure.
 
 - Baseline Azure CLI
 
 ```sh
-# 182 MB - 6 layers
-time docker run --rm demo42t.azurecr.io/demo42/queueworker:no-entrypoint echo hello
-# 931 MB - 11 layers
-time docker run --rm demo42t.azurecr.io/azure-cli:2.0.75 echo 'hello'
-# 5 GB - 34 layers 373.38 seconds
-time docker run --rm demo42t.azurecr.io/spark-notebook:1 echo hello
-# 1.8k - 1 layer 1.8 seconds
-time docker run --rm demo42t.azurecr.io/hello-world:latest
+time \
+  docker run --rm ${ACR_NAME}.azurecr.io/azure-cli:2.0.75 echo 'hello'
 ```
 
-## ACI Baseline
+## Comparing with ACI
 
-```sh
-time az container create \
-  --resource-group aci \
-  --name demo42-queueworker \
-  --image ${ACR_NAME}.azurecr.io/demo42/queueworker:no-entrypoint \
-  --command-line "echo hello" \
-  --registry-login-server ${ACR_NAME}.azurecr.io \
-  --registry-username $ACR_USER \
-  --registry-password $ACR_PWD \
-  --restart-policy Never
+- Create credentials to pass to `az container create`
+  > Note: this sample will change to [using acr tokens][acr-tokens].
+  ```sh
+    export ACR_USER=${ACR_NAME}
+    ACR_PWD="$(az acr credential show \
+      -n ${ACR_NAME} \
+      --query passwords[0].value -o tsv)"
+  ```
 
-az container delete --resource-group aci --name demo42-queueworker -y
-```
+- Create an ACI
 
-```sh
-time az container create \
-  --resource-group aci \
-  --name az-cli \
-  --image ${ACR_NAME}.azurecr.io/azure-cli:2.0.75  \
-  --registry-login-server ${ACR_NAME}.azurecr.io \
-  --registry-username $ACR_NAME \
-  --registry-password $ACR_PWD \
-  --restart-policy Never
+  ```sh
+  time az container create \
+    --resource-group aci \
+    --name az-cli \
+    --image ${ACR_NAME}.azurecr.io/azure-cli:2.0.75  \
+    --registry-login-server ${ACR_NAME}.azurecr.io \
+    --registry-username $ACR_NAME \
+    --registry-password $ACR_PWD \
+    --restart-policy Never
 
-az container delete --resource-group aci --name az-cli -y
-```
-
-```sh
-time az container create \
-  --resource-group aci \
-  --name spark-notebook \
-  --image demo42t.azurecr.io/spark-notebook:1 \
-  --command-line "echo hello" \
-  --registry-login-server ${ACR_NAME}.azurecr.io \
-  --registry-username $ACR_USER \
-  --registry-password $ACR_PWD \
-  --restart-policy Never
-
-az container delete --resource-group aci --name spark-notebook -y
-```
-
-```sh
-time az container create \
-  --resource-group aci \
-  --name hello-world \
-  --image demo42t.azurecr.io/hello-world:latest \
-  --registry-login-server ${ACR_NAME}.azurecr.io \
-  --registry-username $ACR_USER \
-  --registry-password $ACR_PWD \
-  --restart-policy Never
-
-az container delete --resource-group aci --name hello-world -y
-```
-
-## ACR Tasks, w/Teleport
-
-```sh
-az acr run -r demo42t \
-  --cmd "orca run demo42t.azurecr.io/demo42/queueworker:no-entrypoint echo hello" /dev/null
-
-az acr run -r demo42t \
-  --cmd "orca run demo42t.azurecr.io/azure-cli:2.0.75 echo hello" /dev/null
-
-az acr run -r demo42t \
-  --cmd "orca run demo42t.azurecr.io/spark-notebook:1 echo hello" /dev/null
-
-az acr run -r demo42t \
-  --cmd "orca run demo42t.azurecr.io/hello-world:latest" /dev/null
-```
+  az container delete --resource-group aci --name az-cli -y
+  ```
 
 ## Multi-step Task Samples
 
-### Basic Task Sample
+> coming soon
 
-```sh
-az acr run -r demo42t \
-  -f pre-cache-task.yaml \
-  /dev/null
-```
+
+[acr-import]:           https://aka.ms/acr/import
+[acr-tokens]:           https://aka.ms/acr/repo-permissions
+[cloud-shell]:          https://shell.azure.com
+[signup]:               https://aka.ms/teleport/signup
+[support]:              https://github.com/azurecr/teleport/blob/master/README.md#getting-support
+[teleport-blog-post]:   https://stevelasker.blog/2019/10/29/azure-container-registry-teleportation/
+[acr-tasks]:            https://aka.ms/acr/tasks
+[webhooks]:             https://docs.microsoft.com/en-us/azure/container-registry/container-registry-webhook
