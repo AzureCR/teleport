@@ -3,6 +3,7 @@
 Instancing a custom environment within seconds is one of the many wonders of running containers. Having to wait for the image and its layers to download & decompress the first time is the current price of admission.
 
 ***Project Teleport removes the cost of download and decompression by mounting pre-expanded layers from the Azure Container Registry to Teleport enabled Azure container hosts.***
+
 |Dedicated VM|Teleport w/ACR Tasks |
 |-|-|
 |![](./media/vm-aci.gif)|![](./media/tasks-aci.gif)|
