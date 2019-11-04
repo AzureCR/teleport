@@ -220,3 +220,13 @@ az acr run -r demo42t \
 az acr run -r demo42t \
   --cmd "orca run demo42t.azurecr.io/hello-world:latest" /dev/null
 ```
+
+## Multi-step Task Samples
+
+### Basic Task Sample
+
+```sh
+az acr run -r demo42t \
+  -f pre-cache-task.yaml \
+  /dev/null
+```

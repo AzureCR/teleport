@@ -1,5 +1,0 @@
-version: 0.0.1
-steps:
-  - build: -t {{.Run.Registry}}/mssql-scandb:2g -f Dockerfile .
-  - push:
-    - {{.Run.Registry}}/mssql-scandb:2g
