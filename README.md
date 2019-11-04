@@ -8,7 +8,7 @@ Instancing a custom environment within seconds is one of the many wonders of run
 |-|-|
 |![](./media/vm-aci.gif)|![](./media/tasks-aci.gif)|
 
-[![](./media/AzureFridayTeleportPreviewThumb.png)](https://channel9.msdn.com/Shows/Azure-Friday/How-to-expedite-container-startup-with-Project-Teleport-and-Azure-Container-Registry/player#time=21s:paused)
+[![](./media/AzureFridayTeleportPreviewThumb.png)](https://channel9.msdn.com/Shows/Azure-Friday/How-to-expedite-container-startup-with-Project-Teleport-and-Azure-Container-Registry/player#time=21s)
 
 ![](./media/teleport-metrics.png)
 > For more background, please see [Azure Container Registry Adds Teleportation][teleport-blog-post]
