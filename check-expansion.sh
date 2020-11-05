@@ -8,7 +8,7 @@
 # NOTE: Repo scoped tokens will be coming online in November
 ACR_NAME=$1
 ACR_REPO=$2
-ACR_DIGEST=$3
+ACR_TAG=$3
 DEBUG=$4
 
 # Troubleshooting 
