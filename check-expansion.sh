@@ -10,6 +10,7 @@ ACR_NAME=$1
 ACR_REPO=$2
 ACR_DIGEST=$3
 DEBUG=$4
+
 # Troubleshooting 
 if [ $DEBUG = '--debug' ]; then
     echo "Parameter Validation:"
@@ -17,7 +18,17 @@ if [ $DEBUG = '--debug' ]; then
     echo "  ACR_PWD : ${ACR_PWD}"
     echo "  ACR_NAME: ${ACR_NAME}"
     echo "  ACR_REPO: ${ACR_REPO}"
-    echo "  ACR_DIGEST : ${ACR_DIGEST}"
+    echo "  ACR_TAG : ${ACR_TAG}"
+fi
+
+echo "Finding Digest for $ACR_REPO:$ACR_TAG https://$ACR_NAME.azurecr.io/v2/$ACR_REPO/manifests/$ACR_TAG"
+
+ACR_DIGEST=$(curl -s -L -u "$ACR_USER:$ACR_PWD" -I \
+  -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+  https://$ACR_NAME.azurecr.io/v2/$ACR_REPO/manifests/$ACR_TAG | grep ^Docker-Content-Digest | awk '{print $2}' | head -c 71)
+
+if [ $DEBUG = '--debug' ]; then
+    echo "  ACR_DIGEST: ${ACR_DIGEST}"
 fi
 
 echo "Checking https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_DIGEST"
@@ -31,7 +42,7 @@ do
     elif [ $STATUS -eq 409 ]; then
         echo "Teleport: expanding layers"
     elif  [ $STATUS -eq 404 ]; then
-        echo "Teleport: ${ACR_NAME}-${ACR_REPO}:${ACR_DIGEST} not enabled"
+        echo "Teleport: ${ACR_NAME}-${ACR_REPO}:${ACR_TAG} not enabled"
         break
     else
         echo "Unknown status $STATUS"
