@@ -8,7 +8,7 @@
 # NOTE: Repo scoped tokens will be coming online in November
 ACR_NAME=$1
 ACR_REPO=$2
-ACR_TAG=$3
+ACR_DIGEST=$3
 DEBUG=$4
 # Troubleshooting 
 if [ $DEBUG = '--debug' ]; then
@@ -17,13 +17,13 @@ if [ $DEBUG = '--debug' ]; then
     echo "  ACR_PWD : ${ACR_PWD}"
     echo "  ACR_NAME: ${ACR_NAME}"
     echo "  ACR_REPO: ${ACR_REPO}"
-    echo "  ACR_TAG : ${ACR_TAG}"
+    echo "  ACR_DIGEST : ${ACR_DIGEST}"
 fi
 
-echo "Checking https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_TAG"
+echo "Checking https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_DIGEST"
 while true
 do
-    STATUS=$(curl -s -o /dev/null -w "%{http_code}" -u "$ACR_USER:$ACR_PWD" "https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_TAG")
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" -u "$ACR_USER:$ACR_PWD" "https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_DIGEST")
     echo "Status: ${STATUS}"
     if [ $STATUS -eq 200 ]; then
         echo "Teleport: layers ready"
@@ -31,7 +31,7 @@ do
     elif [ $STATUS -eq 409 ]; then
         echo "Teleport: expanding layers"
     elif  [ $STATUS -eq 404 ]; then
-        echo "Teleport: ${ACR_NAME}-${ACR_REPO}:${ACR_TAG} not enabled"
+        echo "Teleport: ${ACR_NAME}-${ACR_REPO}:${ACR_DIGEST} not enabled"
         break
     else
         echo "Unknown status $STATUS"
