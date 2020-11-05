@@ -10,6 +10,7 @@ ACR_NAME=$1
 ACR_REPO=$2
 ACR_TAG=$3
 DEBUG=$4
+
 # Troubleshooting 
 if [ $DEBUG = '--debug' ]; then
     echo "Parameter Validation:"
@@ -20,10 +21,20 @@ if [ $DEBUG = '--debug' ]; then
     echo "  ACR_TAG : ${ACR_TAG}"
 fi
 
-echo "Checking https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_TAG"
+echo "Finding Digest for $ACR_REPO:$ACR_TAG https://$ACR_NAME.azurecr.io/v2/$ACR_REPO/manifests/$ACR_TAG"
+
+ACR_DIGEST=$(curl -s -L -u "$ACR_USER:$ACR_PWD" -I \
+  -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+  https://$ACR_NAME.azurecr.io/v2/$ACR_REPO/manifests/$ACR_TAG | grep ^Docker-Content-Digest | awk '{print $2}' | head -c 71)
+
+if [ $DEBUG = '--debug' ]; then
+    echo "  ACR_DIGEST: ${ACR_DIGEST}"
+fi
+
+echo "Checking https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_DIGEST"
 while true
 do
-    STATUS=$(curl -s -o /dev/null -w "%{http_code}" -u "$ACR_USER:$ACR_PWD" "https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_TAG")
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" -u "$ACR_USER:$ACR_PWD" "https://$ACR_NAME.azurecr.io/mount/v1/$ACR_REPO/_manifests/$ACR_DIGEST")
     echo "Status: ${STATUS}"
     if [ $STATUS -eq 200 ]; then
         echo "Teleport: layers ready"
