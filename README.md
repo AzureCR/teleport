@@ -115,11 +115,11 @@ Preview 1 has the following constraints. Your feedback will help us prioritize t
 - Registries must exist in the following regions:
     | Region | Code |
     | - | - |
-    | South Central US | SCUS |
     | East US | EUS |
+    | East US 2 | EUS2 |
+    | South Central US | SCUS |
     | West US | WUS |
     | West US 2 | WUS2 |
-    | East US 2 | EUS2 |
     | West Europe | WEU |
   - Additional regions, including other continents will come online as we get more feedback.
 - [ACR Import][acr-import] does not yet trigger layer expansion. Images must be pushed with `docker push`, built with `az acr build`, or built with [acr task triggers](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-tasks-overview#trigger-task-on-source-code-update).
