@@ -112,7 +112,15 @@ Preview 1 has the following constraints. Your feedback will help us prioritize t
 
 - Limited to running images with [ACR Tasks][acr-tasks]
   - ACR Task image building is not yet supported. However, you can use teleport for pre/post build steps.
-- Registries must exist in the **South Central US** or **East US** regions
+- Registries must exist in the following regions:
+    | Region | Code |
+    | - | - |
+    | South Central US | SCUS |
+    | East US | EUS |
+    | West US | WUS |
+    | West US 2 | WUS2 |
+    | East US 2 | EUS2 |
+    | West US | WEU |
   - Additional regions, including other continents will come online as we get more feedback.
 - [ACR Import][acr-import] does not yet trigger layer expansion. Images must be pushed with `docker push`, built with `az acr build`, or built with [acr task triggers](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-tasks-overview#trigger-task-on-source-code-update).
 - [Geo-replicated](https://aka.ms/acr/geo-replication) registries require *translocation*. For preview 1, only the master region of a geo-replicated registry will support teleportation.
@@ -143,7 +151,7 @@ Preview 1 has the following constraints. Your feedback will help us prioritize t
 
   ```sh
   az acr repository show \
-    --repository base-images/dotnet/core/sdk \
+    --repository azure-vote-front \
     -o jsonc
   {
   "changeableAttributes": {
