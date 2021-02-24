@@ -15,14 +15,14 @@ To test the same image with and without Teleport enabled, two additional nodepoo
 
 ## Set environment variables
 
-Configure variables unique to your environment.
+Configure variables unique to your environment. Note the ACR and AKS instances must both be in one of the [teleport supported regions][teleport-regions].
 
 ```azurecli-interactive
-AKS_RG=teleport-rg
-AKS=teleport
-K8S_VERSION=1.19.7
+AKS=myaks
+AKS_RG=${AKS}-rg
 RG_LOCATION=westus2
-ACR=teleport
+K8S_VERSION=1.19.7
+ACR=myacr
 ACR_URL=${ACR}.azurecr.io
 ```
 
@@ -299,3 +299,5 @@ docker inspect teleport.azurecr.io/azure-vote-front:v1
 While you might consider flatting your images to one layer for fast mounting, while that would help, you may have contention on a single mount point. The purpose of the Teleport preview is to get further metrics on the usage to understand the art and science of image layers. The Teleport design does not require an image owner to make changes to use Teleport. Teleport works with your existing container images. However, with each technology, there are always optimizations that may be made based on the deployment target.
 
 One thing is always common about image performance. The smaller you can make your overall container image, the faster it will run.
+
+[teleport-regions]:     ./README.md#preview-constraints
