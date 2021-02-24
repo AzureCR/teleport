@@ -89,14 +89,13 @@ az acr repository show \
 Look for `"teleportEnabled": true,` in the output
 
 ```json
-{
-  "changeableAttributes": {
-    "deleteEnabled": true,
-    "listEnabled": true,
-    "readEnabled": true,
-    "teleportEnabled": true,
-    "writeEnabled": true
-  }
+"changeableAttributes": {
+  "deleteEnabled": true,
+  "listEnabled": true,
+  "readEnabled": true,
+  "teleportEnabled": true,
+  "writeEnabled": true
+}
 ```
 
 Although the repository is configured for teleport expansion, each image upload will take time to be expanded on push. The length of time is based on the quantity and size of layers, however the expansion should be completed within seconds.
