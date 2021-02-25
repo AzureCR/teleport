@@ -218,7 +218,7 @@ To reset the nodes, delete the two deployments:
 
 ```azurecli-interactive
 kubectl delete -f azure-vote-teleport.yaml
-kubectl apply -f azure-vote-teleport.yaml
+kubectl delete -f azure-vote-shuttle.yaml
 ```
 
 Clear the image cache, and any teleport mounts:
